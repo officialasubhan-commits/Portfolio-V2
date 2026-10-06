@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Activity,
   KeyRound,
+  Shield,
   ShieldAlert,
 } from "lucide-react";
 import { api, setTokens, getAccessToken } from "@/services/api";
@@ -32,6 +33,7 @@ export default function AdminLoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking");
   const [checkingExistingAuth, setCheckingExistingAuth] = useState(false);
+  const [setupRequired, setSetupRequired] = useState(false);
 
   // Check if user is already authenticated & check backend status
   useEffect(() => {
@@ -44,9 +46,9 @@ export default function AdminLoginPage() {
         if (isMounted) setCheckingExistingAuth(true);
         try {
           const res = await api.getMe();
-          if (res?.data?.user && isMounted) {
+          if (res.data?.user && isMounted) {
             if (res.data.user.mustChangePassword) {
-              router.replace("/admin/change-password");
+              router.replace("/admin/setup");
             } else {
               router.replace("/admin");
             }
@@ -59,11 +61,17 @@ export default function AdminLoginPage() {
         }
       }
 
-      // 2. Check Backend Health
+      // 2. Check Backend Health & Setup Status
       try {
         const isHealthy = await api.checkHealth();
         if (isMounted) {
           setBackendStatus(isHealthy ? "online" : "offline");
+        }
+        if (isHealthy) {
+          const statusRes = await api.getSetupStatus();
+          if (isMounted && statusRes.data?.setupRequired) {
+            setSetupRequired(true);
+          }
         }
       } catch {
         if (isMounted) {
@@ -115,9 +123,9 @@ export default function AdminLoginPage() {
       }
 
       // First-time login / Temporary password flow:
-      // If mustChangePassword is true, DO NOT allow dashboard access yet. Redirect directly to change-password!
+      // If mustChangePassword is true, DO NOT allow dashboard access yet. Redirect directly to setup!
       if (user.mustChangePassword) {
-        router.push("/admin/change-password");
+        router.push("/admin/setup");
       } else {
         router.push("/admin");
       }
@@ -215,6 +223,21 @@ export default function AdminLoginPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="sm:mx-auto sm:w-full sm:max-w-md z-10"
       >
+        {setupRequired && (
+          <div className="mb-4 p-3.5 rounded-xl bg-[#C47A52]/10 border border-[#C47A52]/30 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-[#E0A080]">
+              <Shield className="w-4 h-4 text-[#C47A52] flex-shrink-0" />
+              <span>Initial CMS setup is pending.</span>
+            </div>
+            <Link
+              href="/admin/setup"
+              className="px-2.5 py-1 rounded-lg bg-[#C47A52] hover:bg-[#D48A62] text-white text-[11px] font-semibold whitespace-nowrap transition-colors"
+            >
+              Set Up &rarr;
+            </Link>
+          </div>
+        )}
+
         <div className="bg-[#141414]/90 backdrop-blur-xl border border-[#2A2A2A] shadow-2xl shadow-black/80 rounded-2xl p-7 sm:p-9 relative overflow-hidden">
           {/* Subtle top edge highlight */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#C47A52]/40 to-transparent" />

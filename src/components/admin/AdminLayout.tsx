@@ -21,6 +21,7 @@ import {
   RotateCcw,
   AlertTriangle,
   Lock,
+  Settings,
 } from "lucide-react";
 import { api, getAccessToken, clearTokens } from "@/services/api";
 import { ToastProvider, LoadingSpinner, Modal, useToast } from "./AdminUI";
@@ -33,11 +34,12 @@ const navigationGroups = [
   {
     title: "CONTENT MANAGEMENT",
     items: [
-      { name: "About & Bio", href: "/admin/about", icon: User },
+      { name: "Profile & Hero", href: "/admin/profile", icon: User },
+      { name: "About & Bio", href: "/admin/about", icon: BookOpen },
       { name: "Projects", href: "/admin/projects", icon: FolderGit2 },
       { name: "Skills & Tech", href: "/admin/skills", icon: Zap },
       { name: "Experience", href: "/admin/experience", icon: Briefcase },
-      { name: "Blog Posts", href: "/admin/blogs", icon: BookOpen },
+      { name: "Blog Posts", href: "/admin/blogs", icon: Edit3 },
       { name: "Services", href: "/admin/services", icon: Layers },
       { name: "Testimonials", href: "/admin/testimonials", icon: Quote },
     ],
@@ -49,10 +51,18 @@ const navigationGroups = [
       { name: "Media Library", href: "/admin/media", icon: ImageIcon },
     ],
   },
+  {
+    title: "SETTINGS & SECURITY",
+    items: [
+      { name: "Site Settings", href: "/admin/settings", icon: Settings },
+      { name: "Admin Security", href: "/admin/security", icon: Lock },
+    ],
+  },
 ];
 
 const pageTitles: Record<string, string> = {
   "/admin": "System Overview",
+  "/admin/profile": "Profile & Hero Image Configuration",
   "/admin/about": "About & Bio Configuration",
   "/admin/skills": "Skills & Expertise Management",
   "/admin/projects": "Projects Portfolio",
@@ -62,6 +72,8 @@ const pageTitles: Record<string, string> = {
   "/admin/services": "Consulting & Engineering Services",
   "/admin/media": "Media Assets Library",
   "/admin/messages": "Contact Form Inquiries",
+  "/admin/settings": "Global Site Settings",
+  "/admin/security": "Admin Account & Security",
 };
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
@@ -92,10 +104,11 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
   const isLoginPage = pathname === "/admin/login";
   const isChangePasswordPage = pathname === "/admin/change-password";
-  const isAuthPage = isLoginPage || isChangePasswordPage;
+  const isSetupPage = pathname === "/admin/setup";
+  const isAuthPage = isLoginPage || isChangePasswordPage || isSetupPage;
 
   useEffect(() => {
-    if (isLoginPage) {
+    if (isLoginPage || isSetupPage) {
       setLoading(false);
       return;
     }
@@ -120,15 +133,15 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           }));
 
           // First-login enforcement:
-          // If mustChangePassword is true, DO NOT allow access to CMS dashboard yet. Redirect to /admin/change-password!
-          if (currentUser.mustChangePassword && !isChangePasswordPage) {
+          // If mustChangePassword is true, DO NOT allow access to CMS dashboard yet. Redirect to setup!
+          if (currentUser.mustChangePassword && !isChangePasswordPage && !isSetupPage) {
             setLoading(false);
-            router.replace("/admin/change-password");
+            router.replace("/admin/setup");
             return;
           }
 
-          // If on change-password page but password is already set, route to dashboard
-          if (!currentUser.mustChangePassword && isChangePasswordPage) {
+          // If on change-password or setup page but password is already set, route to dashboard
+          if (!currentUser.mustChangePassword && (isChangePasswordPage || isSetupPage)) {
             router.replace("/admin");
             return;
           }

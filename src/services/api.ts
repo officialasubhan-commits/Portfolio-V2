@@ -120,6 +120,12 @@ export const api = {
     }
   },
   // Auth
+  getSetupStatus: () => request<{ setupRequired: boolean; setupCompleted: boolean; tempEmailHint?: string | null }>("/auth/setup-status"),
+  setupAdmin: (data: { tempEmail: string; tempPassword: string; permanentEmail: string; newPassword: string; confirmPassword: string }) =>
+    request("/auth/setup", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
   login: (email: string, password: string) =>
     request("/auth/login", {
       method: "POST",
@@ -129,6 +135,11 @@ export const api = {
   changePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
     request("/auth/change-password", {
       method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateEmail: (data: { currentPassword: string; newEmail: string; confirmEmail: string }) =>
+    request("/auth/email", {
+      method: "PUT",
       body: JSON.stringify(data),
     }),
   resetContent: (data: { email: string; password: string; confirm: boolean }) =>

@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { api } from "@/services/api";
 
 const footerLinks = [
   {
@@ -32,6 +34,24 @@ const footerLinks = [
 ];
 
 export default function Footer() {
+  const [about, setAbout] = useState<any>(null);
+
+  useEffect(() => {
+    api.getAbout()
+      .then((res) => {
+        if (res.data) setAbout(res.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const ownerName = about?.name || "Portfolio";
+  const initials = ownerName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "PF";
+
   return (
     <footer className="relative bg-surface border-t border-border noise-overlay">
       {/* Top decorative line */}
@@ -63,12 +83,12 @@ export default function Footer() {
             <h3 className="text-label text-gold mb-6">Contact</h3>
             <div className="space-y-3 text-sm text-muted-light">
               <a
-                href="mailto:arjun@mehta.dev"
+                href={`mailto:${about?.email || "contact@example.com"}`}
                 className="block hover:text-gold transition-colors duration-300"
               >
-                arjun@mehta.dev
+                {about?.email || "contact@example.com"}
               </a>
-              <p>Bengaluru, India</p>
+              <p>{about?.location || "San Francisco, CA & Remote"}</p>
             </div>
           </div>
 
@@ -106,14 +126,14 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-border">
           <div className="flex items-center gap-4">
             <span className="text-2xl font-serif font-semibold text-foreground">
-              AM
+              {initials}
             </span>
             <span className="text-xs text-muted">
-              AI/ML Engineer & Software Architect
+              {about?.title || "AI Systems Architect & Engineer"}
             </span>
           </div>
           <p className="text-xs text-muted">
-            © {new Date().getFullYear()} Arjun Mehta. All rights reserved.
+            &copy; {new Date().getFullYear()} {ownerName}. All rights reserved.
           </p>
           <p className="text-xs text-muted-light italic">
             Engineering Intelligence. Building Impact.

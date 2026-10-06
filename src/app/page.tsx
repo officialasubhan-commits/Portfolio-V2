@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -13,7 +14,10 @@ import {
   CountUp,
   ParallaxImage,
 } from "@/components/Animations";
-import { projects, stats } from "@/data/portfolio";
+import { projects as defaultProjects, stats as defaultStats } from "@/data/portfolio";
+import { api } from "@/services/api";
+
+const FALLBACK_HERO_IMAGE = "/images/hero-portrait.jpg";
 
 const expertiseAreas = [
   {
@@ -46,6 +50,53 @@ const trustedBy = [
 ];
 
 export default function HomePage() {
+  const [about, setAbout] = useState<any>(null);
+  const [projectsList, setProjectsList] = useState<any[]>(defaultProjects);
+  const [heroImageSrc, setHeroImageSrc] = useState<string>(FALLBACK_HERO_IMAGE);
+
+  useEffect(() => {
+    // 1. Fetch Live Profile & Hero Configuration from REST API
+    api.getAbout()
+      .then((res) => {
+        if (res.success && res.data) {
+          setAbout(res.data);
+          if (res.data.avatarUrl) {
+            setHeroImageSrc(res.data.avatarUrl);
+          }
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch Live Projects from REST API
+    api.getProjects()
+      .then((res) => {
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data.map((p: any) => ({
+            id: p.slug || p.id,
+            title: p.title,
+            subtitle: p.subtitle || "",
+            category: p.category || "Engineering",
+            year: p.year || "2026",
+            image: p.mainImage || "/images/project-ai-dashboard.jpg",
+            description: p.description || "",
+            longDescription: p.longDescription || "",
+            technologies: typeof p.technologies === "string" ? JSON.parse(p.technologies || "[]") : p.technologies || [],
+            metrics: typeof p.metrics === "string" ? JSON.parse(p.metrics || "[]") : p.metrics || [],
+            challenges: typeof p.challenges === "string" ? JSON.parse(p.challenges || "[]") : p.challenges || [],
+            role: p.role || "",
+            duration: p.duration || "",
+            link: p.liveUrl || "",
+            github: p.githubUrl || "",
+          }));
+          setProjectsList(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const ownerName = about?.name || "Alex Morgan";
+  const professionalTitle = about?.title || "AI/ML Engineer & Software Architect";
+
   return (
     <div className="page-transition">
       {/* ═══════════════════════════════════
@@ -69,7 +120,7 @@ export default function HomePage() {
               >
                 <div className="w-12 h-[1px] bg-gold" />
                 <span className="text-label text-gold">
-                  AI/ML Engineer & Software Architect
+                  {professionalTitle}
                 </span>
               </motion.div>
 
@@ -102,17 +153,23 @@ export default function HomePage() {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="text-lg md:text-xl text-muted-light leading-relaxed max-w-lg"
               >
-                I engineer intelligent systems
-                <br />
-                and scalable architectures
-                <br />
-                that transform raw data
-                <br />
-                into{" "}
-                <span className="text-gold italic font-serif text-2xl">
-                  actionable impact
-                </span>
-                .
+                {about?.bio ? (
+                  about.bio
+                ) : (
+                  <>
+                    I engineer intelligent systems
+                    <br />
+                    and scalable architectures
+                    <br />
+                    that transform raw data
+                    <br />
+                    into{" "}
+                    <span className="text-gold italic font-serif text-2xl">
+                      actionable impact
+                    </span>
+                    .
+                  </>
+                )}
               </motion.p>
 
               {/* Signature */}
@@ -122,7 +179,7 @@ export default function HomePage() {
                 transition={{ duration: 0.8, delay: 0.8 }}
                 className="font-serif italic text-2xl text-foreground/70"
               >
-                Arjun Mehta
+                {ownerName}
               </motion.p>
 
               {/* Giant Title */}
@@ -158,7 +215,7 @@ export default function HomePage() {
               </motion.div>
             </div>
 
-            {/* Right — Hero Image */}
+            {/* Right — Hero Image (CMS Managed) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -170,12 +227,16 @@ export default function HomePage() {
                 <div className="absolute -inset-1 border border-gold/20 z-10 pointer-events-none" />
                 <div className="absolute -inset-3 border border-gold/10 z-10 pointer-events-none" />
                 <Image
-                  src="/images/hero-portrait.jpg"
-                  alt="Arjun Mehta — AI/ML Engineer"
+                  src={heroImageSrc}
+                  alt={`${ownerName} — ${professionalTitle}`}
                   fill
                   className="object-cover"
                   priority
                   sizes="(max-width: 768px) 100vw, 40vw"
+                  unoptimized={heroImageSrc.startsWith("http")}
+                  onError={() => {
+                    setHeroImageSrc(FALLBACK_HERO_IMAGE);
+                  }}
                 />
                 {/* Emerald overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-emerald-dark/40 via-transparent to-transparent" />
@@ -322,8 +383,8 @@ export default function HomePage() {
 
           {/* Projects grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.map((project, i) => (
-              <Reveal key={project.id} delay={i * 0.15}>
+            {projectsList.map((project, i) => (
+              <Reveal key={project.id || i} delay={i * 0.15}>
                 <Link href={`/projects/${project.id}`} className="group block">
                   <div className="relative overflow-hidden aspect-[16/10] mb-4">
                     <Image
@@ -377,7 +438,7 @@ export default function HomePage() {
       <section className="py-16 bg-surface border-y border-border">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
-            {stats.map((stat, i) => (
+            {defaultStats.map((stat: any, i: number) => (
               <Reveal key={stat.label} delay={i * 0.1}>
                 <div className="text-center">
                   <p className="heading-display text-4xl md:text-5xl lg:text-6xl text-gold mb-2">

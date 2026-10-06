@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Reveal,
   TextReveal,
   LineReveal,
 } from "@/components/Animations";
+import { api } from "@/services/api";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -18,21 +19,22 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [about, setAbout] = useState<any>(null);
+
+  useEffect(() => {
+    api.getAbout()
+      .then((res) => {
+        if (res.data) setAbout(res.data);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
     setSubmitting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to submit message");
-      }
+      await api.submitContact(formData);
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 5000);
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -43,29 +45,34 @@ export default function ContactPage() {
     }
   };
 
+  const contactEmail = about?.email || "contact@example.com";
+  const contactLocation = about?.location || "San Francisco, CA & Remote";
+  const githubUrl = about?.github || "https://github.com";
+  const linkedinUrl = about?.linkedin || "https://linkedin.com";
+
   const contactInfo = [
     {
       icon: "✉",
       label: "Email",
-      value: "arjun@mehta.dev",
-      href: "mailto:arjun@mehta.dev",
+      value: contactEmail,
+      href: `mailto:${contactEmail}`,
     },
     {
       icon: "◎",
       label: "Location",
-      value: "Bengaluru, India",
+      value: contactLocation,
     },
     {
       icon: "⟁",
       label: "GitHub",
-      value: "github.com/arjun-mehta",
-      href: "https://github.com",
+      value: githubUrl.replace(/^https?:\/\//, ""),
+      href: githubUrl,
     },
     {
       icon: "◈",
       label: "LinkedIn",
-      value: "linkedin.com/in/arjun-mehta",
-      href: "https://linkedin.com",
+      value: linkedinUrl.replace(/^https?:\/\//, ""),
+      href: linkedinUrl,
     },
   ];
 

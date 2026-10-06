@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@/services/api";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -16,6 +17,24 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [about, setAbout] = useState<any>(null);
+
+  useEffect(() => {
+    api.getAbout()
+      .then((res) => {
+        if (res.data) setAbout(res.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const initials = about?.name
+    ? about.name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "AM";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -50,7 +69,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="relative group" aria-label="Home">
             <span className="text-2xl font-serif font-semibold tracking-tight text-foreground group-hover:text-gold transition-colors duration-300">
-              AM
+              {initials}
             </span>
             <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-gold group-hover:w-full transition-all duration-500" />
           </Link>
