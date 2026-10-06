@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import PageTransition from "@/components/PageTransition";
-import SmoothScroll from "@/components/SmoothScroll";
+import SiteShell from "@/components/SiteShell";
 
 export const metadata: Metadata = {
   title: "Arjun Mehta — AI/ML Engineer & Software Architect",
@@ -24,7 +21,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
       <head>
@@ -40,13 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <SmoothScroll>
-          <Navbar />
-          <PageTransition>
-            <main className="flex-1">{children}</main>
-          </PageTransition>
-          <Footer />
-        </SmoothScroll>
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );

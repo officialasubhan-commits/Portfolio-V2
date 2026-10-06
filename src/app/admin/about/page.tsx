@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "@/services/api";
-import { useToast, LoadingSpinner } from "@/components/admin/AdminUI";
+import { useToast, LoadingSpinner, PageHeader } from "@/components/admin/AdminUI";
 import { Save, Plus, Trash2 } from "lucide-react";
 
 export default function AdminAboutPage() {
@@ -56,7 +56,21 @@ export default function AdminAboutPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await api.updateAbout(formData);
+      const cleanEmail = formData.email ? formData.email.trim() : "";
+      if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        addToast("Please provide a valid email address (e.g. arjun@mehta.dev).", "error");
+        setSaving(false);
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        email: cleanEmail,
+        github: formData.github ? formData.github.trim() : "",
+        linkedin: formData.linkedin ? formData.linkedin.trim() : "",
+      };
+
+      const res = await api.updateAbout(payload);
       setFormData(res.data);
       addToast("About details successfully saved to database.", "success");
     } catch (err: any) {
@@ -74,23 +88,21 @@ export default function AdminAboutPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-serif font-semibold text-[#171717]">About Information</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">
-            Configure your professional biography, core philosophy, and portfolio metrics.
-          </p>
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          <span>{saving ? "Saving Changes..." : "Save Changes"}</span>
-        </button>
-      </div>
+      <PageHeader
+        title="About & Bio Configuration"
+        description="Configure your professional biography, core philosophy, and live portfolio metrics."
+        breadcrumbs={["Admin", "Content", "About"]}
+        action={
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saving ? "Saving Changes..." : "Save Changes"}</span>
+          </button>
+        }
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Core Identity */}
@@ -160,13 +172,23 @@ export default function AdminAboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#6B6B6B] mb-1">Public Email</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-[#6B6B6B]">Public Email</label>
+                {formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim()) ? (
+                  <span className="text-[10px] text-emerald-600 font-medium">Valid</span>
+                ) : formData.email ? (
+                  <span className="text-[10px] text-amber-600 font-medium">Enter valid email</span>
+                ) : null}
+              </div>
               <input
                 type="email"
+                placeholder="e.g. arjun@mehta.dev"
                 value={formData.email || ""}
                 onChange={(e) => handleChange("email", e.target.value)}
+                onBlur={() => handleChange("email", (formData.email || "").trim())}
                 className="w-full px-3 py-2 text-xs bg-[#FAFAF8] border border-[#E8E8E5] rounded-lg text-[#171717] focus:outline-none focus:border-[#C47A52]"
               />
+              <span className="text-[10px] text-[#6B6B6B] block mt-1">Displayed in website footer & contact links</span>
             </div>
 
             <div>

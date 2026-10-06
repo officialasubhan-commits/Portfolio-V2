@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "@/services/api";
-import { useToast, LoadingSpinner, Badge, EmptyState, Modal, ConfirmDialog } from "@/components/admin/AdminUI";
+import { useToast, LoadingSpinner, Badge, EmptyState, Modal, ConfirmDialog, PageHeader } from "@/components/admin/AdminUI";
 import { Plus, Edit2, Trash2, Zap, Search } from "lucide-react";
 
 export default function AdminSkillsPage() {
@@ -119,22 +119,20 @@ export default function AdminSkillsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-serif font-semibold text-[#171717]">Skills & Expertise</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">
-            Manage technical proficiencies, frameworks, and display order across all 6 categories.
-          </p>
-        </div>
-
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Skill</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Skills & Technical Arsenal"
+        description="Manage technical proficiencies, frameworks, and display order across all categories."
+        breadcrumbs={["Admin", "Content", "Skills"]}
+        action={
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Skill</span>
+          </button>
+        }
+      />
 
       {/* Filter & Search Bar */}
       <div className="bg-[#FFFFFF] p-4 rounded-xl border border-[#E8E8E5] flex flex-col md:flex-row items-center gap-4 justify-between">

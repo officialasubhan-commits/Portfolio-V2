@@ -44,7 +44,22 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
     headers["Content-Type"] = "application/json";
   }
 
-  let res = await fetch(url, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(url, { ...options, headers });
+  } catch (netErr: any) {
+    const isConnRefused =
+      netErr?.message?.includes("fetch failed") ||
+      netErr?.message?.includes("Failed to fetch") ||
+      netErr?.name === "TypeError";
+    const err: any = new Error(
+      isConnRefused
+        ? "Unable to connect to the backend API server (port 5000). Please ensure the backend is started."
+        : netErr?.message || "Network request failed."
+    );
+    err.isNetworkError = true;
+    throw err;
+  }
 
   // Handle Token Expiry & Automatic Refresh for CMS requests
   if (res.status === 401 && getRefreshToken() && !endpoint.includes("/auth/")) {
@@ -72,7 +87,18 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const errorMsg = data.message || `Request failed with status ${res.status}`;
+    let errorMsg = data.message;
+    if (data.error?.issues && Array.isArray(data.error.issues) && data.error.issues.length > 0) {
+      errorMsg = data.error.issues.map((i: any) => i.message).join(". ");
+    } else if (typeof data.error === "string") {
+      errorMsg = data.error;
+    } else if (data.error?.message) {
+      errorMsg = data.error.message;
+    }
+    if (!errorMsg) {
+      errorMsg = `Request failed with status ${res.status}`;
+    }
+
     const err: any = new Error(errorMsg);
     err.status = res.status;
     err.data = data;
@@ -83,6 +109,16 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
 }
 
 export const api = {
+  // System Health
+  checkHealth: async () => {
+    try {
+      const rootUrl = API_BASE.replace(/\/api\/?$/, "");
+      const res = await fetch(`${rootUrl}/health`, { signal: AbortSignal.timeout(3000) });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
   // Auth
   login: (email: string, password: string) =>
     request("/auth/login", {
@@ -90,6 +126,21 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
   getMe: () => request("/auth/me"),
+  changePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
+    request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  resetContent: (data: { email: string; password: string; confirm: boolean }) =>
+    request("/admin/reset-content", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateProfile: (data: any) =>
+    request("/auth/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
   logout: () => {
     clearTokens();
   },

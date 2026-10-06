@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "@/services/api";
-import { useToast, LoadingSpinner, Badge, EmptyState, Modal, ConfirmDialog } from "@/components/admin/AdminUI";
+import { useToast, LoadingSpinner, Badge, EmptyState, Modal, ConfirmDialog, PageHeader } from "@/components/admin/AdminUI";
 import { Mail, Trash2, CheckCircle2, Search } from "lucide-react";
 
 export default function AdminMessagesPage() {
@@ -101,14 +101,11 @@ export default function AdminMessagesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-serif font-semibold text-[#171717]">Contact Inquiries</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">
-            Messages submitted through the public website contact form with automatic email dispatch.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Contact Form Inquiries"
+        description="Messages submitted through the public website contact form with real-time status tracking."
+        breadcrumbs={["Admin", "Engagement", "Messages"]}
+      />
 
       {/* Filter and Search Bar */}
       <div className="bg-[#FFFFFF] p-4 rounded-xl border border-[#E8E8E5] flex flex-col md:flex-row items-center gap-4 justify-between">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { api } from "@/services/api";
-import { useToast, LoadingSpinner, EmptyState, ConfirmDialog } from "@/components/admin/AdminUI";
+import { useToast, LoadingSpinner, EmptyState, ConfirmDialog, PageHeader } from "@/components/admin/AdminUI";
 import { UploadCloud, Trash2, Copy, Check, Image as ImageIcon, ExternalLink } from "lucide-react";
 
 export default function AdminMediaPage() {
@@ -87,32 +87,30 @@ export default function AdminMediaPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-serif font-semibold text-[#171717]">Media Library</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">
-            Upload, preview, and organize image assets used in projects, case studies, and blogs.
-          </p>
-        </div>
-
-        <div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => handleFileUpload(e.target.files?.[0])}
-            accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm disabled:opacity-50"
-          >
-            <UploadCloud className="w-4 h-4" />
-            <span>{uploading ? "Uploading Image..." : "Upload New Image"}</span>
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Media Assets Library"
+        description="Upload, preview, and organize image assets used in projects, case studies, and blogs."
+        breadcrumbs={["Admin", "Engagement", "Media"]}
+        action={
+          <div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={(e) => handleFileUpload(e.target.files?.[0])}
+              accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            >
+              <UploadCloud className="w-4 h-4" />
+              <span>{uploading ? "Uploading Image..." : "Upload New Image"}</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* Upload Dropzone */}
       <div

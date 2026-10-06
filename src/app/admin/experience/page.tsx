@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "@/services/api";
-import { useToast, LoadingSpinner, Badge, EmptyState, Modal, ConfirmDialog } from "@/components/admin/AdminUI";
+import { useToast, LoadingSpinner, Badge, EmptyState, Modal, ConfirmDialog, PageHeader } from "@/components/admin/AdminUI";
 import { Plus, Edit2, Trash2, Briefcase, Calendar, MapPin } from "lucide-react";
 
 export default function AdminExperiencePage() {
@@ -132,22 +132,20 @@ export default function AdminExperiencePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-serif font-semibold text-[#171717]">Career & Experience</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">
-            Document professional roles, research tenures, key achievements, and technologies.
-          </p>
-        </div>
-
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Experience</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Career & Experience History"
+        description="Document professional roles, research tenures, key achievements, and technologies."
+        breadcrumbs={["Admin", "Content", "Experience"]}
+        action={
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#C47A52] hover:bg-[#B36B45] rounded-lg transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Experience</span>
+          </button>
+        }
+      />
 
       {loading ? (
         <LoadingSpinner size="lg" label="Loading career history..." />

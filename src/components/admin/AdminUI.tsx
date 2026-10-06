@@ -256,3 +256,54 @@ export function EmptyState({
     </div>
   );
 }
+
+/* ─── PAGE HEADER ─── */
+export function PageHeader({
+  title,
+  description,
+  breadcrumbs,
+  action,
+}: {
+  title: string;
+  description?: string;
+  breadcrumbs?: string[];
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E8E8E5]">
+      <div>
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#6B6B6B] mb-1">
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span className="text-[#E8E8E5]">/</span>}
+                <span className={idx === breadcrumbs.length - 1 ? "text-[#C47A52]" : ""}>{crumb}</span>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+        <h1 className="text-xl font-serif font-bold text-[#171717] tracking-tight">{title}</h1>
+        {description && <p className="text-xs text-[#6B6B6B] mt-0.5 leading-relaxed">{description}</p>}
+      </div>
+      {action && <div className="flex items-center gap-3 shrink-0">{action}</div>}
+    </div>
+  );
+}
+
+/* ─── CARD ─── */
+export function Card({
+  children,
+  className = "",
+  padding = "p-5",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  padding?: string;
+}) {
+  return (
+    <div className={`bg-[#FFFFFF] rounded-xl border border-[#E8E8E5] shadow-xs ${padding} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
